@@ -6208,13 +6208,20 @@ sub message_for_host2 {
         my $string_len = length_ref( $string_ref  ) ;
 
 
-        unless ( defined  $string_ok  and $string_len ) {
-                # undef or 0 length
+        unless ( defined  $string_ok ) {
+                # undef
                 my $error = join q{},
                         "- msg $h1_fold/$h1_msg {$string_len} S[$h1_size] F[$h1_flags] I[$h1_idate] could not be fetched: ",
                         $imap1->LastError || q{}, "\n"  ;
                 errors_incr( $mysync, $error ) ;
                 $total_bytes_error += $h1_size if ( $h1_size ) ;
+                $h1_nb_msg_processed +=1 ;
+                return ;
+        }
+
+        if (! $string_len) {
+                # returned content length 0 (may happen in exchange, UID FETCH is successful but returns an empty block)
+                myprint("- msg $h1_fold/$h1_msg {$string_len} S[$h1_size] F[$h1_flags] I[$h1_idate] has zero size\n");
                 $h1_nb_msg_processed +=1 ;
                 return ;
         }
